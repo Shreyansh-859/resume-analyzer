@@ -1,6 +1,10 @@
-nltk
-spacy
-scikit-learn
-PyMuPDF
 fastapi
 uvicorn
+python-multipart
+pymupdf
+nltk
+scikit-learn
+reportlab
+python-docx
+pillow
+pytesseract

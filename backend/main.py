@@ -2,6 +2,7 @@ from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+import os
 import inspect
 import sqlite3
 import json
@@ -35,12 +36,20 @@ app = FastAPI(
 # CORS
 # ============================================================
 
+frontend_origin = os.getenv("FRONTEND_URL", "https://ai-resume-analyzer.onrender.com")
+
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "https://ai-resume-analyzer.onrender.com",
+]
+if frontend_origin and frontend_origin not in origins:
+    origins.append(frontend_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://127.0.0.1:5173"
-    ],
+    allow_origins=origins,
+    allow_origin_regex=r"https://.*\.onrender\.com",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
