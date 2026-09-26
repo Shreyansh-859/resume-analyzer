@@ -143,6 +143,13 @@ def extract_project_titles(projects):
             continue
 
         # ----------------------------------------------------
+        # Ignore description continuations / full sentences
+        # ----------------------------------------------------
+
+        if re.match(r"^[a-z]", line) or line.endswith("."):
+            continue
+
+        # ----------------------------------------------------
         # Ignore contact information
         # ----------------------------------------------------
 
