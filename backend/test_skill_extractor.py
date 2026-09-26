@@ -7,67 +7,71 @@ from resume.skill_extractor import (
 )
 
 
-# ---------------------------------------
-# EXTRACT RESUME TEXT
-# ---------------------------------------
+import os
 
-pdf_path = "test_files/sample_resume.pdf"
+if __name__ == "__main__":
+    # ---------------------------------------
+    # EXTRACT RESUME TEXT
+    # ---------------------------------------
 
-text = extract_text_from_pdf(pdf_path)
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    pdf_path = os.path.join(base_dir, "test_files", "sample_resume.pdf")
 
-
-# ---------------------------------------
-# EXTRACT SKILLS
-# ---------------------------------------
-
-skills = extract_skills(text)
+    text = extract_text_from_pdf(pdf_path)
 
 
-# ---------------------------------------
-# DISPLAY SKILLS
-# ---------------------------------------
+    # ---------------------------------------
+    # EXTRACT SKILLS
+    # ---------------------------------------
 
-print("\n========================================")
-print("AI RESUME ANALYZER")
-print("SKILL EXTRACTION")
-print("========================================")
+    skills = extract_skills(text)
 
 
-print("\nDetected Skills:")
-print("----------------------------------------")
+    # ---------------------------------------
+    # DISPLAY SKILLS
+    # ---------------------------------------
 
-for number, skill in enumerate(skills, start=1):
-
-    print(f"{number}. {skill}")
-
-
-# ---------------------------------------
-# TOTAL SKILLS
-# ---------------------------------------
-
-total_skills = count_skills(skills)
-
-print("\n----------------------------------------")
-
-print("Total Skills Found:", total_skills)
+    print("\n========================================")
+    print("AI RESUME ANALYZER")
+    print("SKILL EXTRACTION")
+    print("========================================")
 
 
-# ---------------------------------------
-# SKILL CATEGORIES
-# ---------------------------------------
+    print("\nDetected Skills:")
+    print("----------------------------------------")
 
-categories = get_skill_categories(skills)
+    for number, skill in enumerate(skills, start=1):
 
-
-print("\n========================================")
-print("SKILLS BY CATEGORY")
-print("========================================")
+        print(f"{number}. {skill}")
 
 
-for category, category_skills in categories.items():
+    # ---------------------------------------
+    # TOTAL SKILLS
+    # ---------------------------------------
 
-    print(f"\n{category}:")
+    total_skills = count_skills(skills)
 
-    for skill in category_skills:
+    print("\n----------------------------------------")
 
-        print(f"  - {skill}")
+    print("Total Skills Found:", total_skills)
+
+
+    # ---------------------------------------
+    # SKILL CATEGORIES
+    # ---------------------------------------
+
+    categories = get_skill_categories(skills)
+
+
+    print("\n========================================")
+    print("SKILLS BY CATEGORY")
+    print("========================================")
+
+
+    for category, category_skills in categories.items():
+
+        print(f"\n{category}:")
+
+        for skill in category_skills:
+
+            print(f"  - {skill}")

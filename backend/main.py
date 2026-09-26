@@ -1,12 +1,14 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 
 import os
 import inspect
 import sqlite3
 import json
 from datetime import datetime
+import nltk
 
 from resume.pdf_extractor import extract_text_from_pdf
 from resume.resume_analyzer import (
@@ -22,13 +24,59 @@ from resume.job_matcher import analyze_job_match
 
 
 # ============================================================
-# FASTAPI APPLICATION
+# NLTK RESOURCE INITIALIZATION
 # ============================================================
+
+def ensure_nltk_resources():
+    """
+    Ensure all required NLTK tokenizers, taggers, chunkers,
+    and corpora are available in production environments.
+    """
+    import ssl
+    try:
+        _create_unverified_https_context = ssl._create_unverified_context
+    except AttributeError:
+        pass
+    else:
+        ssl._create_default_https_context = _create_unverified_https_context
+
+    resources = [
+        "punkt",
+        "punkt_tab",
+        "stopwords",
+        "averaged_perceptron_tagger",
+        "averaged_perceptron_tagger_eng",
+        "maxent_ne_chunker",
+        "maxent_ne_chunker_tab",
+        "words",
+        "wordnet",
+        "omw-1.4",
+    ]
+    for res in resources:
+        try:
+            nltk.download(res, quiet=True)
+        except Exception as e:
+            print(f"[NLTK] Warning: could not download '{res}': {e}")
+
+
+# ============================================================
+# LIFESPAN & APPLICATION
+# ============================================================
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Ensure database is created on startup
+    create_database()
+    # Ensure NLTK data is ready
+    ensure_nltk_resources()
+    yield
+
 
 app = FastAPI(
     title="AI Resume Analyzer API",
     description="NLP Based Resume Analyzer and Job Matching System",
-    version="3.1.0"
+    version="3.1.0",
+    lifespan=lifespan
 )
 
 
@@ -37,19 +85,27 @@ app = FastAPI(
 # ============================================================
 
 frontend_origin = os.getenv("FRONTEND_URL", "https://ai-resume-analyzer.onrender.com")
+allowed_origins_env = os.getenv("ALLOWED_ORIGINS", "")
 
 origins = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "https://ai-resume-analyzer.onrender.com",
 ]
-if frontend_origin and frontend_origin not in origins:
-    origins.append(frontend_origin)
+
+for item in (frontend_origin, allowed_origins_env):
+    if item:
+        for o in item.split(","):
+            cleaned = o.strip()
+            if cleaned and cleaned not in origins:
+                origins.append(cleaned)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=r"https://.*\.onrender\.com",
+    allow_origin_regex=r"https://.*(\.onrender\.com|\.vercel\.app|\.netlify\.app)",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -60,10 +116,15 @@ app.add_middleware(
 # DATABASE
 # ============================================================
 
-DATABASE = "resume_history.db"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.getenv("DATABASE_PATH", os.path.join(BASE_DIR, "resume_history.db"))
 
 
 def create_database():
+    db_dir = os.path.dirname(os.path.abspath(DATABASE))
+    if db_dir:
+        os.makedirs(db_dir, exist_ok=True)
+
     connection = sqlite3.connect(DATABASE)
     cursor = connection.cursor()
 
@@ -102,11 +163,12 @@ def create_database():
     connection.close()
 
 
+# Ensure database initialized at import time as well
 create_database()
 
 
 # ============================================================
-# ROOT
+# ROOT & HEALTH CHECK
 # ============================================================
 
 @app.get("/")
@@ -114,6 +176,15 @@ def root():
     return {
         "message": "AI Resume Analyzer API is running",
         "version": "3.1.0"
+    }
+
+
+@app.get("/health")
+def health():
+    return {
+        "status": "healthy",
+        "database": os.path.exists(DATABASE),
+        "timestamp": datetime.now().isoformat()
     }
 
 
@@ -992,3 +1063,10 @@ async def job_match(
                 f"Job matching failed: {str(e)}"
             )
         )
+
+
+if __name__ == "__main__":
+    import uvicorn
+    port = int(os.getenv("PORT", 8000))
+    host = os.getenv("HOST", "0.0.0.0")
+    uvicorn.run("main:app", host=host, port=port, reload=False)

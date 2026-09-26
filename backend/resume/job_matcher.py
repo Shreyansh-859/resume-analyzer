@@ -142,10 +142,16 @@ def calculate_match_percentage(
 
 def analyze_job_match(
     resume_text,
-    job_description
+    job_description,
+    *args,
+    **kwargs
 ):
     """
     Compare resume with a job description.
+
+    Supports both signatures:
+    - analyze_job_match(resume_text, job_description)
+    - analyze_job_match(resume_text, resume_skills, job_description, skills_list)
 
     Returns:
     - Resume skills
@@ -155,12 +161,15 @@ def analyze_job_match(
     - Match percentage
     """
 
-    resume_skills = detect_skills(
-        resume_text
-    )
+    if args and isinstance(job_description, (list, set, tuple)):
+        actual_job_description = args[0]
+        resume_skills = list(job_description) if job_description else detect_skills(resume_text)
+    else:
+        actual_job_description = job_description
+        resume_skills = detect_skills(resume_text)
 
     job_skills = detect_skills(
-        job_description
+        actual_job_description
     )
 
     resume_normalized = {

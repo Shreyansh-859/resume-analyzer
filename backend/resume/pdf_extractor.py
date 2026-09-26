@@ -1,3 +1,4 @@
+import os
 import re
 import pymupdf
 
@@ -642,10 +643,13 @@ def extract_text_from_pdf(
 
     try:
 
-        document = pymupdf.open(
-            stream=pdf_bytes,
-            filetype="pdf"
-        )
+        if isinstance(pdf_bytes, (str, os.PathLike)):
+            document = pymupdf.open(pdf_bytes)
+        else:
+            document = pymupdf.open(
+                stream=pdf_bytes,
+                filetype="pdf"
+            )
 
         pages_text = []
 

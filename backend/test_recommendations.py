@@ -1,3 +1,4 @@
+import os
 from resume.pdf_extractor import extract_text_from_pdf
 
 from resume.resume_analyzer import (
@@ -15,11 +16,9 @@ from resume.job_matcher import (
 )
 
 
-# ---------------------------------------
-# EXTRACT RESUME
-# ---------------------------------------
-
-pdf_path = "test_files/sample_resume.pdf"
+if __name__ == "__main__":
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    pdf_path = os.path.join(base_dir, "test_files", "sample_resume.pdf")
 
 resume_text = extract_text_from_pdf(
     pdf_path

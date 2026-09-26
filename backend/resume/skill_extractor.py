@@ -368,3 +368,63 @@ def extract_all_skills(text):
         "soft_skills":
             extract_soft_skills(text)
     }
+
+
+# ============================================================
+# BACKWARD COMPATIBILITY & HELPERS
+# ============================================================
+
+SKILLS = TECHNICAL_SKILLS
+
+
+def count_skills(skills):
+    return len(skills)
+
+
+SKILL_CATEGORIES = {
+    "Programming Languages": [
+        "Python", "Java", "C++", "C#", "JavaScript", "TypeScript",
+        "Kotlin", "Swift", "Go", "Rust", "PHP", "Ruby", "Dart", "MATLAB"
+    ],
+    "Web & Frameworks": [
+        "HTML", "CSS", "Bootstrap", "Tailwind", "Tailwind CSS",
+        "React", "React.js", "Next.js", "Vue", "Vue.js", "Angular",
+        "Node.js", "Express", "Express.js", "FastAPI", "Flask",
+        "Django", "Spring", "Spring Boot", "Laravel", ".NET", "ASP.NET"
+    ],
+    "Databases": [
+        "SQL", "MySQL", "PostgreSQL", "SQLite", "MongoDB",
+        "Redis", "Firebase", "Supabase", "Oracle"
+    ],
+    "AI & Data Science": [
+        "Machine Learning", "Deep Learning", "Artificial Intelligence",
+        "NLP", "Natural Language Processing", "Computer Vision",
+        "Data Science", "Data Analytics", "Generative AI",
+        "Pandas", "NumPy", "SciPy", "Scikit-learn",
+        "TensorFlow", "PyTorch", "Keras", "OpenCV",
+        "Linear Regression", "Logistic Regression", "Decision Tree",
+        "Random Forest", "Naive Bayes", "K-Means", "KMeans",
+        "SVM", "Support Vector Machine", "PCA", "Principal Component Analysis"
+    ],
+    "Cloud & DevOps": [
+        "AWS", "Amazon Web Services", "Azure", "Microsoft Azure",
+        "Google Cloud", "GCP", "Docker", "Kubernetes", "Jenkins",
+        "Git", "GitHub", "GitLab"
+    ],
+    "Tools & Others": [
+        "REST API", "REST APIs", "REST", "GraphQL", "WebSocket",
+        "WebSockets", "JWT", "Postman", "VS Code", "Visual Studio",
+        "Figma", "Jupyter", "Jupyter Notebook", "Linux", "Unix",
+        "Windows", "macOS", "Vercel", "IBM Watson", "Vite"
+    ]
+}
+
+
+def get_skill_categories(skills):
+    categories = {}
+    normalized_skills = {str(s).lower(): s for s in skills}
+    for cat_name, cat_skills in SKILL_CATEGORIES.items():
+        found = [s for s in cat_skills if s.lower() in normalized_skills]
+        if found:
+            categories[cat_name] = found
+    return categories
